@@ -1,0 +1,178 @@
+@import 'tailwindcss';
+@import 'flatpickr/dist/flatpickr.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+@source '../**/*.vue';
+
+/* =====================================================================
+   Bluemocha Console — Editorial × Industrial Craft tokens
+   ===================================================================== */
+@theme {
+    /* Typography stack */
+    --font-display: 'Fraunces', 'Times New Roman', Georgia, serif;
+    --font-sans:    'Google Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
+    --font-mono:    'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+
+    /* Slate primary palette — refined from Sprint 1 */
+    --color-brand-50:  #f7f8fa;
+    --color-brand-100: #eef0f4;
+    --color-brand-200: #dde1e9;
+    --color-brand-300: #c0c7d4;
+    --color-brand-400: #919cae;
+    --color-brand-500: #6a7689;
+    --color-brand-600: #525c6d;
+    --color-brand-700: #424a58;
+    --color-brand-800: #2d333e;
+    --color-brand-900: #1c2029;
+
+    /* Caramel/mocha accent — single warm note */
+    --color-accent-50:  #fdf7ec;
+    --color-accent-100: #f9ebcf;
+    --color-accent-200: #f3d49b;
+    --color-accent-300: #ecb866;
+    --color-accent-400: #e09e3f;
+    --color-accent-500: #c4892f;
+    --color-accent-600: #a26d24;
+    --color-accent-700: #815420;
+    --color-accent-800: #5a3a16;
+    --color-accent-900: #3a250e;
+
+    /* Surfaces */
+    --color-surface:    #faf6f0;   /* page bg — warm cream */
+    --color-card:       #ffffff;   /* card bg */
+    --color-ink:        #1f1611;   /* deepest body text */
+    --color-ink-soft:   #4a3f37;   /* softened body */
+    --color-rule:       #e7e1d8;   /* hairline borders on cream */
+
+    /* Semantic */
+    --color-success:    #4a7c59;
+    --color-warning:    #c4892f;
+    --color-danger:     #b3493f;
+    --color-info:       #3f6f9a;
+
+    /* Elevation */
+    --shadow-paper: 0 1px 0 0 rgba(31, 22, 17, 0.04), 0 1px 2px 0 rgba(31, 22, 17, 0.05);
+    --shadow-lift:  0 2px 6px -2px rgba(31, 22, 17, 0.08), 0 4px 16px -4px rgba(31, 22, 17, 0.08);
+    --shadow-pop:   0 10px 40px -10px rgba(31, 22, 17, 0.25), 0 4px 12px -4px rgba(31, 22, 17, 0.15);
+
+    /* Radii — sharp, not pillow */
+    --radius-xs: 2px;
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+}
+
+/* =====================================================================
+   Base
+   ===================================================================== */
+html {
+    background: var(--color-surface);
+    font-feature-settings: 'ss01', 'cv11';
+}
+
+body {
+    @apply font-sans antialiased text-[color:var(--color-ink)];
+    font-feature-settings: 'tnum' on, 'cv11' on, 'ss01' on;
+}
+
+/* Display serif only where called out — page H1, big numerals */
+.font-display {
+    font-family: var(--font-display);
+    font-optical-sizing: auto;
+    font-variation-settings: 'SOFT' 30, 'WONK' 0;
+    letter-spacing: -0.015em;
+}
+
+/* Tabular numerals helper */
+.tnum,
+table {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' on;
+}
+
+/* =====================================================================
+   DataTable density modes
+   ===================================================================== */
+[data-density='comfortable'] {
+    --row-py: 14px;
+    --row-fs: 14px;
+}
+[data-density='compact'] {
+    --row-py: 8px;
+    --row-fs: 13px;
+}
+[data-density='dense'] {
+    --row-py: 4px;
+    --row-fs: 12.5px;
+}
+
+/* When the entire table is in mono mode */
+[data-mono='1'] tbody td,
+[data-mono='1'] thead th {
+    font-family: var(--font-mono);
+    letter-spacing: -0.01em;
+    font-size: calc(var(--row-fs) - 0.5px);
+}
+
+/* =====================================================================
+   Hand-rolled scrollbar — quiet but characterful
+   ===================================================================== */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-brand-300) transparent;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+    background: var(--color-brand-300);
+    border-radius: 999px;
+    border: 2px solid var(--color-surface);
+}
+*::-webkit-scrollbar-thumb:hover { background: var(--color-brand-400); }
+
+/* =====================================================================
+   Focus ring — subtle but unmissable
+   ===================================================================== */
+@layer base {
+    :focus-visible {
+        outline: 2px solid var(--color-accent-400);
+        outline-offset: 2px;
+        border-radius: 2px;
+    }
+}
+
+/* =====================================================================
+   Caret + selection
+   ===================================================================== */
+::selection {
+    background: var(--color-accent-200);
+    color: var(--color-ink);
+}
+
+/* =====================================================================
+   Flatpickr theme override — match our look
+   ===================================================================== */
+.flatpickr-calendar {
+    font-family: var(--font-sans) !important;
+    border: 1px solid var(--color-rule) !important;
+    border-radius: var(--radius-md) !important;
+    box-shadow: var(--shadow-pop) !important;
+}
+.flatpickr-day.selected,
+.flatpickr-day.startRange,
+.flatpickr-day.endRange {
+    background: var(--color-accent-500) !important;
+    border-color: var(--color-accent-500) !important;
+    color: white !important;
+}
+.flatpickr-day.inRange {
+    background: var(--color-accent-100) !important;
+    border-color: var(--color-accent-100) !important;
+    box-shadow: -5px 0 0 var(--color-accent-100), 5px 0 0 var(--color-accent-100) !important;
+}
+.flatpickr-day.today {
+    border-color: var(--color-accent-400) !important;
+}
