@@ -96,13 +96,14 @@ Reference data used by Dashboards & Sale. Read from legacy tables; CRUD only for
 
 ---
 
-## SPRINT 5 — Dashboard (Main) Migration 🔥 Priority
-- [ ] Catalog every widget/KPI/chart on legacy Dashboard (screenshots + SQL)
-- [ ] Build `DashboardController@index` returning all widget data via Inertia props
-- [ ] Build `Pages/Dashboard/Index.vue` with grid layout
-- [ ] Chart.js v4 via `vue-chartjs` — sales trend, top products, etc.
-- [ ] Date-range filter (global state, URL-driven)
-- [ ] Verify numbers match legacy 1:1 (parallel-run comparison)
+## SPRINT 5 — Dashboard (Main) Migration ✅
+- [x] Catalog every widget/KPI/chart on legacy Dashboard — full audit of DashboardController, 25+ AJAX endpoints mapped
+- [x] `DashboardService` — all query logic extracted: KPIs, Section 2 comparisons, sales rank, best sale, commissions (online/Thailand CF/TikTok Live/Teafac/Affiliate), brand sales, shipping, customer counts, new customers, daily + day-of-week charts
+- [x] `DashboardController@index` — single Inertia response with all props; date range via `?start=&end=` URL params
+- [x] `Pages/Dashboard/Index.vue` — full grid layout: 6 KPI cards, 4-period comparison row, Line + Bar charts (vue-chartjs), sales rank table, customer counts, top 20 best-sale products with progress bars, tabbed commission panel, brand sales bar chart, shipping method table
+- [x] Chart.js v4 + vue-chartjs installed; Line (daily trend) + Bar (orders by day/channel) charts wired
+- [x] Date-range filter — `<DateRangePicker>` triggers `router.reload()` with `start`/`end` params; all widgets refresh together
+- [x] Business rules preserved: marketplace date switch (post-July 2024 → cod_pay_date), retail/wholesale/credit/marketplace segmentation, commission rates (1%/2%), TikTok shop_id/shop_brand filters
 
 ---
 

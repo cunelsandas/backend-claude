@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\MasterData\BrandController;
 use App\Http\Controllers\MasterData\CategoryController;
 use App\Http\Controllers\MasterData\CustomerController;
@@ -31,7 +32,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/', fn () => redirect()->route('dashboard'));
 
-    Route::get('/dashboard', fn () => Inertia::render('Dashboard'))->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     Route::get('/ui-kit', fn () => Inertia::render('UiKit'))->name('ui-kit');
 
