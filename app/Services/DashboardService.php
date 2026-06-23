@@ -19,13 +19,14 @@ class DashboardService
      * Build a WHERE fragment that handles the post-July-2024 marketplace date switch.
      * Returns a raw SQL snippet and its bindings.
      */
-    private function salesDateWhere(string $start, string $end): array
+    private function salesDateWhere(string $start, string $end, string $alias = ''): array
     {
+        $p = $alias ? "{$alias}." : '';
         return [
             "(
-                (shop_method NOT IN ('Shopee','Lazada','Tiktok') AND date BETWEEN ? AND ?)
-                OR (shop_method IN ('Shopee','Lazada','Tiktok') AND YEAR(date) <= 2024 AND date BETWEEN ? AND ?)
-                OR (shop_method IN ('Shopee','Lazada','Tiktok') AND YEAR(date) > 2024 AND cod_pay_date BETWEEN ? AND ?)
+                ({$p}shop_method NOT IN ('Shopee','Lazada','Tiktok') AND {$p}date BETWEEN ? AND ?)
+                OR ({$p}shop_method IN ('Shopee','Lazada','Tiktok') AND YEAR({$p}date) <= 2024 AND {$p}date BETWEEN ? AND ?)
+                OR ({$p}shop_method IN ('Shopee','Lazada','Tiktok') AND YEAR({$p}date) > 2024 AND {$p}cod_pay_date BETWEEN ? AND ?)
             )",
             [$start, $end, $start, $end, $start, $end],
         ];
@@ -206,7 +207,7 @@ class DashboardService
 
     public function getBestSale(string $start, string $end): array
     {
-        [$dateWhere, $bindings] = $this->salesDateWhere($start, $end);
+        [$dateWhere, $bindings] = $this->salesDateWhere($start, $end, 's');
 
         $rows = DB::select("
             SELECT
@@ -400,7 +401,7 @@ class DashboardService
     {
         $brands = DB::table('sma_brands')->where('status', 1)->get(['id', 'name', 'color']);
 
-        [$dateWhere, $bindings] = $this->salesDateWhere($start, $end);
+        [$dateWhere, $bindings] = $this->salesDateWhere($start, $end, '');
 
         $salesRows = DB::select("
             SELECT shop_brand, shop_method,
