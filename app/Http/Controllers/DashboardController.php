@@ -37,20 +37,23 @@ class DashboardController extends Controller
         $user = Auth::user();
 
         return Inertia::render('Dashboard/Index', [
-            'dateRange'     => ['start' => $startDate, 'end' => $endDate],
-            'kpis'          => $this->service->getKpis($startFull, $endFull),
-            'section2'      => $this->service->getSection2(),
-            'saleRank'      => $this->service->getSaleRank($startFull, $endFull, $user),
-            'bestSale'      => $this->service->getBestSale($startFull, $endFull),
-            'commissions'   => $this->service->getCommissions($startFull, $endFull),
-            'brandSale'     => $this->service->getBrandSale($startFull, $endFull),
-            'shipping'      => $this->service->getShipping($startDate, $endDate),
-            'customerCount' => $this->service->getCustomerCount(),
-            'newCustomers'  => $this->service->getNewCustomers($startDate, $endDate),
-            'charts'        => [
-                'daily'      => $this->service->getDailyChart($startFull, $endFull),
-                'dayOfWeek'  => $this->service->getDayOfWeekChart($startFull, $endFull),
-            ],
+            // Returned immediately — page shell renders without waiting for DB
+            'dateRange' => ['start' => $startDate, 'end' => $endDate],
+
+            // Deferred — fetched in a follow-up background request after the page loads
+            'kpis'          => Inertia::defer(fn () => $this->service->getKpis($startFull, $endFull)),
+            'section2'      => Inertia::defer(fn () => $this->service->getSection2()),
+            'saleRank'      => Inertia::defer(fn () => $this->service->getSaleRank($startFull, $endFull, $user)),
+            'bestSale'      => Inertia::defer(fn () => $this->service->getBestSale($startFull, $endFull)),
+            'commissions'   => Inertia::defer(fn () => $this->service->getCommissions($startFull, $endFull)),
+            'brandSale'     => Inertia::defer(fn () => $this->service->getBrandSale($startFull, $endFull)),
+            'shipping'      => Inertia::defer(fn () => $this->service->getShipping($startDate, $endDate)),
+            'customerCount' => Inertia::defer(fn () => $this->service->getCustomerCount()),
+            'newCustomers'  => Inertia::defer(fn () => $this->service->getNewCustomers($startDate, $endDate)),
+            'charts'        => Inertia::defer(fn () => [
+                'daily'     => $this->service->getDailyChart($startFull, $endFull),
+                'dayOfWeek' => $this->service->getDayOfWeekChart($startFull, $endFull),
+            ]),
         ]);
     }
 }

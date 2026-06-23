@@ -1,6 +1,6 @@
 <script setup>
-import { router } from '@inertiajs/vue3';
-import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { Deferred, router } from '@inertiajs/vue3';
+import { computed, ref } from 'vue';
 import { Bar, Line } from 'vue-chartjs';
 import {
     Chart as ChartJS,
@@ -15,26 +15,17 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, LineElement, PointEleme
 
 const props = defineProps({
     dateRange:     { type: Object, required: true },
-    kpis:          { type: Object, required: true },
-    section2:      { type: Object, required: true },
-    saleRank:      { type: Array,  required: true },
-    bestSale:      { type: Array,  required: true },
-    commissions:   { type: Object, required: true },
-    brandSale:     { type: Array,  required: true },
-    shipping:      { type: Array,  required: true },
-    customerCount: { type: Object, required: true },
-    newCustomers:  { type: Object, required: true },
-    charts:        { type: Object, required: true },
+    kpis:          { type: Object,  default: null },
+    section2:      { type: Object,  default: null },
+    saleRank:      { type: Array,   default: null },
+    bestSale:      { type: Array,   default: null },
+    commissions:   { type: Object,  default: null },
+    brandSale:     { type: Array,   default: null },
+    shipping:      { type: Array,   default: null },
+    customerCount: { type: Object,  default: null },
+    newCustomers:  { type: Object,  default: null },
+    charts:        { type: Object,  default: null },
 });
-
-// ── Skeleton loading ─────────────────────────────────────────────────────
-const loading = ref(false);
-let stopStart, stopFinish;
-onMounted(() => {
-    stopStart  = router.on('start',  () => { loading.value = true; });
-    stopFinish = router.on('finish', () => { loading.value = false; });
-});
-onUnmounted(() => { stopStart?.(); stopFinish?.(); });
 
 // ── Date filter ──────────────────────────────────────────────────────────
 const dateFilter = ref([props.dateRange.start, props.dateRange.end]);
@@ -53,26 +44,32 @@ const fmtN = (n) => Number(n ?? 0).toLocaleString('th-TH');
 const pct  = (n) => { const v = Number(n ?? 0); return (v >= 0 ? '+' : '') + v.toFixed(1) + '%'; };
 const pctTone = (n) => Number(n ?? 0) >= 0 ? 'success' : 'danger';
 
-// ── KPI cards ────────────────────────────────────────────────────────────
-const kpiCards = computed(() => [
-    { label: 'Total Sales',       value: props.kpis.sale_total,      sub: `${fmtN(props.kpis.order_count + props.kpis.marketplace_orders)} orders`, tone: 'accent' },
-    { label: 'Retail + Wholesale',value: props.kpis.retail_wholesale, sub: `Retail ${fmt(props.kpis.retail)}`, tone: 'default' },
-    { label: 'Wholesale',         value: props.kpis.wholesale,        sub: null, tone: 'default' },
-    { label: 'Credit',            value: props.kpis.credit,           sub: null, tone: 'default' },
-    { label: 'Marketplace',       value: props.kpis.marketplace,      sub: `Shopee ${fmt(props.kpis.shopee)} · Lazada ${fmt(props.kpis.lazada)}`, tone: 'default' },
-    { label: 'TikTok Live',       value: props.kpis.tiktok_live,      sub: `Affiliate ${fmt(props.kpis.tiktok)}`, tone: 'default' },
-]);
+// ── KPI cards (guarded — kpis is null until deferred props arrive) ────────
+const kpiCards = computed(() => {
+    if (!props.kpis) return [];
+    return [
+        { label: 'Total Sales',        value: props.kpis.sale_total,      sub: `${fmtN(props.kpis.order_count + props.kpis.marketplace_orders)} orders`, tone: 'accent' },
+        { label: 'Retail + Wholesale', value: props.kpis.retail_wholesale, sub: `Retail ${fmt(props.kpis.retail)}`, tone: 'default' },
+        { label: 'Wholesale',          value: props.kpis.wholesale,        sub: null, tone: 'default' },
+        { label: 'Credit',             value: props.kpis.credit,           sub: null, tone: 'default' },
+        { label: 'Marketplace',        value: props.kpis.marketplace,      sub: `Shopee ${fmt(props.kpis.shopee)} · Lazada ${fmt(props.kpis.lazada)}`, tone: 'default' },
+        { label: 'TikTok Live',        value: props.kpis.tiktok_live,      sub: `Affiliate ${fmt(props.kpis.tiktok)}`, tone: 'default' },
+    ];
+});
 
 // ── Daily chart ──────────────────────────────────────────────────────────
-const dailyChartData = computed(() => ({
-    labels: props.charts.daily.map(d => d.day),
-    datasets: [
-        { label: 'Total',      data: props.charts.daily.map(d => d.total),       borderColor: 'rgb(196,137,47)',  backgroundColor: 'rgba(196,137,47,0.08)', fill: true, tension: 0.3, pointRadius: 2 },
-        { label: 'Retail',     data: props.charts.daily.map(d => d.retail),      borderColor: 'rgb(63,111,154)',  backgroundColor: 'rgba(63,111,154,0.06)', fill: true, tension: 0.3, pointRadius: 2 },
-        { label: 'Wholesale',  data: props.charts.daily.map(d => d.wholesale),   borderColor: 'rgb(74,124,89)',   backgroundColor: 'rgba(74,124,89,0.06)',  fill: true, tension: 0.3, pointRadius: 2 },
-        { label: 'Marketplace',data: props.charts.daily.map(d => d.marketplace), borderColor: 'rgb(179,73,63)',   backgroundColor: 'rgba(179,73,63,0.06)',  fill: true, tension: 0.3, pointRadius: 2 },
-    ],
-}));
+const dailyChartData = computed(() => {
+    const daily = props.charts?.daily ?? [];
+    return {
+        labels: daily.map(d => d.day),
+        datasets: [
+            { label: 'Total',      data: daily.map(d => d.total),       borderColor: 'rgb(196,137,47)',  backgroundColor: 'rgba(196,137,47,0.08)', fill: true, tension: 0.3, pointRadius: 2 },
+            { label: 'Retail',     data: daily.map(d => d.retail),      borderColor: 'rgb(63,111,154)',  backgroundColor: 'rgba(63,111,154,0.06)', fill: true, tension: 0.3, pointRadius: 2 },
+            { label: 'Wholesale',  data: daily.map(d => d.wholesale),   borderColor: 'rgb(74,124,89)',   backgroundColor: 'rgba(74,124,89,0.06)',  fill: true, tension: 0.3, pointRadius: 2 },
+            { label: 'Marketplace',data: daily.map(d => d.marketplace), borderColor: 'rgb(179,73,63)',   backgroundColor: 'rgba(179,73,63,0.06)',  fill: true, tension: 0.3, pointRadius: 2 },
+        ],
+    };
+});
 
 const lineChartOptions = {
     responsive: true, maintainAspectRatio: false,
@@ -91,7 +88,7 @@ const CHANNEL_COLORS = {
     Online:   'rgba(63,111,154,0.7)', Other:  'rgba(160,160,160,0.7)',
 };
 const dowChartData = computed(() => {
-    const dow = props.charts.dayOfWeek;
+    const dow = props.charts?.dayOfWeek ?? { days: [], channels: [], matrix: {} };
     return {
         labels: dow.days,
         datasets: dow.channels.map(ch => ({
@@ -125,7 +122,7 @@ const commTabs = [
     <AppLayout>
         <template #header>Dashboard</template>
 
-        <!-- Date Range Filter -------------------------------------------------->
+        <!-- Date Range Filter — always visible immediately -->
         <div class="flex items-center justify-between mb-6">
             <p class="text-xs text-[color:var(--color-brand-500)] uppercase tracking-wider font-medium">
                 {{ dateRange.start === dateRange.end ? dateRange.start : `${dateRange.start} → ${dateRange.end}` }}
@@ -138,109 +135,108 @@ const commTabs = [
         </div>
 
         <!-- ═══════════════════════════════════════════════════════════════════
-             SKELETON STATE
+             Deferred: skeleton shown until all heavy props arrive from server
              ═══════════════════════════════════════════════════════════════════ -->
-        <template v-if="loading">
+        <Deferred data="kpis,section2,saleRank,bestSale,commissions,brandSale,shipping,customerCount,newCustomers,charts">
 
-            <!-- KPI skeletons -->
-            <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
-                <div v-for="i in 6" :key="i"
-                    class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse">
-                    <div class="h-2.5 w-16 bg-[color:var(--color-brand-100)] rounded mb-3"/>
-                    <div class="h-5 w-24 bg-[color:var(--color-brand-100)] rounded mb-2"/>
-                    <div class="h-2 w-20 bg-[color:var(--color-brand-100)] rounded"/>
-                </div>
-            </div>
-
-            <!-- Period comparison skeletons -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                <div v-for="i in 4" :key="i"
-                    class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse">
-                    <div class="h-2.5 w-20 bg-[color:var(--color-brand-100)] rounded mb-3"/>
-                    <div class="h-5 w-28 bg-[color:var(--color-brand-100)] rounded mb-2"/>
-                    <div class="flex gap-3">
-                        <div class="h-2 w-16 bg-[color:var(--color-brand-100)] rounded"/>
-                        <div class="h-2 w-12 bg-[color:var(--color-brand-100)] rounded"/>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chart skeletons -->
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
-                <div v-for="i in 2" :key="i"
-                    class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse h-72">
-                    <div class="h-3 w-32 bg-[color:var(--color-brand-100)] rounded mb-4"/>
-                    <div class="h-56 bg-[color:var(--color-brand-50)] rounded"/>
-                </div>
-            </div>
-
-            <!-- Sales rank + customer count skeletons -->
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6">
-                <div class="xl:col-span-2 bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse">
-                    <div class="h-3 w-24 bg-[color:var(--color-brand-100)] rounded mb-4"/>
-                    <div v-for="i in 6" :key="i" class="flex items-center gap-4 py-2.5 border-b border-[color:var(--color-brand-50)]">
-                        <div class="h-3 w-4 bg-[color:var(--color-brand-100)] rounded"/>
-                        <div class="h-3 w-28 bg-[color:var(--color-brand-100)] rounded"/>
-                        <div class="ml-auto h-3 w-20 bg-[color:var(--color-brand-100)] rounded"/>
-                        <div class="h-3 w-16 bg-[color:var(--color-brand-100)] rounded"/>
-                        <div class="h-3 w-16 bg-[color:var(--color-brand-100)] rounded"/>
-                        <div class="h-3 w-8  bg-[color:var(--color-brand-100)] rounded"/>
-                    </div>
-                </div>
-                <div class="space-y-3">
-                    <div v-for="card in 2" :key="card"
+            <template #fallback>
+                <!-- KPI skeletons -->
+                <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
+                    <div v-for="i in 6" :key="i"
                         class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse">
-                        <div class="h-2.5 w-24 bg-[color:var(--color-brand-100)] rounded mb-4"/>
-                        <div v-for="i in 4" :key="i" class="flex justify-between py-1">
-                            <div class="h-3 w-16 bg-[color:var(--color-brand-100)] rounded"/>
-                            <div class="h-3 w-12 bg-[color:var(--color-brand-100)] rounded"/>
+                        <div class="h-2.5 w-16 bg-[color:var(--color-brand-100)] rounded mb-3"/>
+                        <div class="h-5 w-24 bg-[color:var(--color-brand-100)] rounded mb-2"/>
+                        <div class="h-2 w-20 bg-[color:var(--color-brand-100)] rounded"/>
+                    </div>
+                </div>
+
+                <!-- Period comparison skeletons -->
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                    <div v-for="i in 4" :key="i"
+                        class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse">
+                        <div class="h-2.5 w-20 bg-[color:var(--color-brand-100)] rounded mb-3"/>
+                        <div class="h-5 w-28 bg-[color:var(--color-brand-100)] rounded mb-2"/>
+                        <div class="flex gap-3">
+                            <div class="h-2 w-16 bg-[color:var(--color-brand-100)] rounded"/>
+                            <div class="h-2 w-12 bg-[color:var(--color-brand-100)] rounded"/>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Best sale skeleton -->
-            <div class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse mb-6">
-                <div class="h-3 w-32 bg-[color:var(--color-brand-100)] rounded mb-4"/>
-                <div v-for="i in 8" :key="i" class="flex items-center gap-4 py-2.5 border-b border-[color:var(--color-brand-50)]">
-                    <div class="h-3 w-4  bg-[color:var(--color-brand-100)] rounded"/>
-                    <div class="h-3 w-40 bg-[color:var(--color-brand-100)] rounded"/>
-                    <div class="ml-auto h-3 w-12 bg-[color:var(--color-brand-100)] rounded"/>
-                    <div class="h-3 w-12 bg-[color:var(--color-brand-100)] rounded"/>
-                    <div class="h-3 w-12 bg-[color:var(--color-brand-100)] rounded"/>
-                    <div class="h-2 w-24 bg-[color:var(--color-brand-100)] rounded-full"/>
-                </div>
-            </div>
-
-            <!-- Commission + brand + shipping skeletons -->
-            <div class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse mb-6">
-                <div class="flex gap-2 mb-4">
-                    <div v-for="i in 5" :key="i" class="h-6 w-20 bg-[color:var(--color-brand-100)] rounded"/>
-                </div>
-                <div class="grid grid-cols-4 gap-4">
-                    <div v-for="i in 4" :key="i">
-                        <div class="h-2.5 w-16 bg-[color:var(--color-brand-100)] rounded mb-2"/>
-                        <div class="h-4 w-24 bg-[color:var(--color-brand-100)] rounded"/>
+                <!-- Chart skeletons -->
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
+                    <div v-for="i in 2" :key="i"
+                        class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse h-72">
+                        <div class="h-3 w-32 bg-[color:var(--color-brand-100)] rounded mb-4"/>
+                        <div class="h-56 bg-[color:var(--color-brand-50)] rounded"/>
                     </div>
                 </div>
-            </div>
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
-                <div v-for="i in 2" :key="i"
-                    class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse">
-                    <div class="h-3 w-28 bg-[color:var(--color-brand-100)] rounded mb-4"/>
-                    <div v-for="j in 5" :key="j" class="flex justify-between py-2 border-b border-[color:var(--color-brand-50)]">
-                        <div class="h-3 w-24 bg-[color:var(--color-brand-100)] rounded"/>
-                        <div class="h-3 w-16 bg-[color:var(--color-brand-100)] rounded"/>
+
+                <!-- Sales rank + customer count skeletons -->
+                <div class="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6">
+                    <div class="xl:col-span-2 bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse">
+                        <div class="h-3 w-24 bg-[color:var(--color-brand-100)] rounded mb-4"/>
+                        <div v-for="i in 6" :key="i" class="flex items-center gap-4 py-2.5 border-b border-[color:var(--color-brand-50)]">
+                            <div class="h-3 w-4 bg-[color:var(--color-brand-100)] rounded"/>
+                            <div class="h-3 w-28 bg-[color:var(--color-brand-100)] rounded"/>
+                            <div class="ml-auto h-3 w-20 bg-[color:var(--color-brand-100)] rounded"/>
+                            <div class="h-3 w-16 bg-[color:var(--color-brand-100)] rounded"/>
+                            <div class="h-3 w-16 bg-[color:var(--color-brand-100)] rounded"/>
+                            <div class="h-3 w-8  bg-[color:var(--color-brand-100)] rounded"/>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div v-for="card in 2" :key="card"
+                            class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse">
+                            <div class="h-2.5 w-24 bg-[color:var(--color-brand-100)] rounded mb-4"/>
+                            <div v-for="i in 4" :key="i" class="flex justify-between py-1">
+                                <div class="h-3 w-16 bg-[color:var(--color-brand-100)] rounded"/>
+                                <div class="h-3 w-12 bg-[color:var(--color-brand-100)] rounded"/>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-        </template>
+                <!-- Best sale skeleton -->
+                <div class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse mb-6">
+                    <div class="h-3 w-32 bg-[color:var(--color-brand-100)] rounded mb-4"/>
+                    <div v-for="i in 8" :key="i" class="flex items-center gap-4 py-2.5 border-b border-[color:var(--color-brand-50)]">
+                        <div class="h-3 w-4  bg-[color:var(--color-brand-100)] rounded"/>
+                        <div class="h-3 w-40 bg-[color:var(--color-brand-100)] rounded"/>
+                        <div class="ml-auto h-3 w-12 bg-[color:var(--color-brand-100)] rounded"/>
+                        <div class="h-3 w-12 bg-[color:var(--color-brand-100)] rounded"/>
+                        <div class="h-3 w-12 bg-[color:var(--color-brand-100)] rounded"/>
+                        <div class="h-2 w-24 bg-[color:var(--color-brand-100)] rounded-full"/>
+                    </div>
+                </div>
 
-        <!-- ═══════════════════════════════════════════════════════════════════
-             CONTENT STATE
-             ═══════════════════════════════════════════════════════════════════ -->
-        <template v-else>
+                <!-- Commission + brand + shipping skeletons -->
+                <div class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse mb-6">
+                    <div class="flex gap-2 mb-4">
+                        <div v-for="i in 5" :key="i" class="h-6 w-20 bg-[color:var(--color-brand-100)] rounded"/>
+                    </div>
+                    <div class="grid grid-cols-4 gap-4">
+                        <div v-for="i in 4" :key="i">
+                            <div class="h-2.5 w-16 bg-[color:var(--color-brand-100)] rounded mb-2"/>
+                            <div class="h-4 w-24 bg-[color:var(--color-brand-100)] rounded"/>
+                        </div>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
+                    <div v-for="i in 2" :key="i"
+                        class="bg-white rounded-[var(--radius-md)] border border-[color:var(--color-rule)] p-4 shadow-[var(--shadow-paper)] animate-pulse">
+                        <div class="h-3 w-28 bg-[color:var(--color-brand-100)] rounded mb-4"/>
+                        <div v-for="j in 5" :key="j" class="flex justify-between py-2 border-b border-[color:var(--color-brand-50)]">
+                            <div class="h-3 w-24 bg-[color:var(--color-brand-100)] rounded"/>
+                            <div class="h-3 w-16 bg-[color:var(--color-brand-100)] rounded"/>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- ═══════════════════════════════════════════════════════════════
+                 CONTENT — rendered once all deferred props have arrived
+                 ═══════════════════════════════════════════════════════════════ -->
 
             <!-- KPI Cards -->
             <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
@@ -484,6 +480,6 @@ const commTabs = [
                 </div>
             </div>
 
-        </template>
+        </Deferred>
     </AppLayout>
 </template>
