@@ -137,7 +137,7 @@ const commTabs = [
         <!-- ═══════════════════════════════════════════════════════════════════
              Deferred: skeleton shown until all heavy props arrive from server
              ═══════════════════════════════════════════════════════════════════ -->
-        <Deferred data="kpis,section2,saleRank,bestSale,commissions,brandSale,shipping,customerCount,newCustomers,charts">
+        <Deferred :data="['kpis','section2','saleRank','bestSale','commissions','brandSale','shipping','customerCount','newCustomers','charts']">
 
             <template #fallback>
                 <!-- KPI skeletons -->
