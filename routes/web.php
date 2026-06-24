@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DashboardTwoController;
 use App\Http\Controllers\MasterData\BrandController;
 use App\Http\Controllers\MasterData\CategoryController;
 use App\Http\Controllers\MasterData\CustomerController;
@@ -33,6 +34,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/', fn () => redirect()->route('dashboard'));
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    Route::prefix('dashboard-two')->name('dashboard-two.')->group(function () {
+        Route::get('/',                  [DashboardTwoController::class, 'index'])->name('index');
+        Route::get('/retail-customers',  [DashboardTwoController::class, 'retailCustomers'])->name('retail-customers');
+        Route::get('/wholesale-customers',[DashboardTwoController::class, 'wholesaleCustomers'])->name('wholesale-customers');
+    });
 
     Route::get('/ui-kit', fn () => Inertia::render('UiKit'))->name('ui-kit');
 

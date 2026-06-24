@@ -12,7 +12,7 @@ const can = (perm) =>
 
 const nav = [
     { type: 'link', label: 'Dashboard',     href: '/dashboard', icon: 'M3 12 12 3l9 9M5 10v10a1 1 0 0 0 1 1h4v-7h4v7h4a1 1 0 0 0 1-1V10', perm: null },
-    { type: 'link', label: 'Dashboard II',  href: '#',          icon: 'M3 3v18h18M7 14l3-3 4 4 5-6', perm: null },
+    { type: 'link', label: 'Dashboard II',  href: '/dashboard-two', icon: 'M3 3v18h18M7 14l3-3 4 4 5-6', perm: null },
     { type: 'link', label: 'Dashboard III', href: '#',          icon: 'M21 21H4.6A1.6 1.6 0 0 1 3 19.4V3M7 14l3 3 4-7 4 3', perm: null },
     { type: 'link', label: 'Sale',          href: '#',          icon: 'M3 9h18l-1.5 11.4a1 1 0 0 1-1 .6H5.5a1 1 0 0 1-1-.6L3 9Zm3 0V6a3 3 0 0 1 3-3h6a3 3 0 0 1 3 3v3', perm: null },
     {
