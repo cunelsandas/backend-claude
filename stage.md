@@ -107,16 +107,46 @@ Reference data used by Dashboards & Sale. Read from legacy tables; CRUD only for
 
 ---
 
-## SPRINT 6 — Dashboard II Migration 🔥 Priority
-- [ ] Catalog widgets unique to Dashboard II
-- [ ] Build `DashboardTwoController` + `Pages/DashboardTwo/Index.vue`
+## SPRINT 6 — Dashboard II Migration ✅
+- [x] Catalog widgets unique to Dashboard II — 27 legacy AJAX endpoints audited, 13 sections identified
+- [x] `DashboardTwoService` — 15 query methods; `buildRevenueMap()` shared helper merges 6 revenue streams
+- [x] `DashboardTwoController` — Inertia index (15 deferred props + 4 eager) + 2 JSON API endpoints
+- [x] `Pages/DashboardTwo/Index.vue` — all 13 sections:
+      - ยอดขายรายเดือนแยกตามปี (8-series line chart, year selector)
+      - จำนวนออเดอร์แยกตามปี (3-series bar chart)
+      - สรุปต้นทุนและรายได้ (3-line cost/revenue chart)
+      - ยอดขายสินค้าแยกตามหมวดสินค้า (top-5 products line, category selector)
+      - แสดงสัดส่วนรายได้จากยอดขาย (donut — retail/wholesale/marketplace)
+      - ในและต่างประเทศ (donut — Thailand vs Export, country_id=226)
+      - สัดส่วนตามประเภทปี + เดือน (2 category-pie donuts, month selector)
+      - สัดส่วน/CS (horizontal stacked bar, per-CS-staff)
+      - ข้อมูลยอดขายรายไตรมาส (5×4Q quarterly table)
+      - ข้อมูลยอดขายรายเดือน (5×12 year-major matrix)
+      - ข้อมูลกำไรขั้นต้นรายเดือน (Finance DB, graceful n/a badge)
+      - ข้อมูลกำไรสุทธิรายเดือน (Finance DB, graceful n/a badge)
+      - Retail/Wholesale customer tables (API-loaded via separate JSON endpoints)
+- [x] 4 selectors: year chips, month `<select>`, category `<select>`, DateRangePicker
+- [x] 6 progressive `<Deferred>` blocks — sections reveal independently as props arrive
+- [x] Routes: `/dashboard-two/` (Inertia) + `/dashboard-two/retail-customers` + `/dashboard-two/wholesale-customers` (JSON)
+- [x] AppLayout nav linked to `/dashboard-two`
+- [x] Fixed Inertia `<Deferred>` skeleton bug on Dashboard Main (`:data="[...]"` array binding)
 - [ ] Verify numbers vs legacy
 
 ---
 
-## SPRINT 7 — Dashboard III Migration 🔥 Priority
-- [ ] Catalog widgets unique to Dashboard Third
-- [ ] Build `DashboardThreeController` + `Pages/DashboardThree/Index.vue`
+## SPRINT 7 — Dashboard III Migration [~] In Progress
+- [x] Catalog all 5 sub-dashboards from legacy (~40 endpoints audited)
+- [x] `DashboardThreeService` — 30+ query methods across all 5 sections
+- [x] `DashboardThreeController` — Inertia index + 35 JSON API endpoints
+- [x] `Pages/DashboardThree/Index.vue` — 5-tab SPA with lazy loading per tab:
+      - **Main**: 6 KPI cards + 2 Doughnut charts (Thai/Export top 10) + 2 tables + paginated full-list modals with search
+      - **Behavior**: 4 KPIs + lead source/contact type/buying cycle charts + tier-filtered customer table
+      - **Financial**: 4 KPIs + top-profit horizontal bar + margin distribution donut + payment analysis table + top 20 customers
+      - **Operation**: 4 KPIs + stage funnel bar + pipeline bar + kanban board (6 stages, add/delete deals) + follow-up table with urgency coloring + add/done/delete + activity timeline
+      - **Product**: 4 KPIs + top 15 products bar + category margin bar + slow movers table + health scores table + competitive refs CRUD + product feedback CRUD
+- [x] All CRUD modals: follow-up, pipeline deal, competitive ref, product feedback
+- [x] Routes: `/dashboard-three/` (Inertia) + 35 API endpoints across 5 sub-paths
+- [x] AppLayout nav linked to `/dashboard-three`
 - [ ] Verify numbers vs legacy
 
 ---
